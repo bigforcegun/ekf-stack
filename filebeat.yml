@@ -1,0 +1,37 @@
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  json.keys_under_root: true
+  json.add_error_key: true
+  index: "demo-logs-%{+yyyy.MM.dd}"
+  paths:
+    - /usr/share/filebeat/demolog/*.log
+- type: log
+  enabled: true
+  json.keys_under_root: true
+  json.add_error_key: true
+  index: "app-logs-%{+yyyy.MM.dd}"
+  paths:
+    - /usr/share/filebeat/applog/*.json
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///host_docker/docker.sock"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+
+setup.template.name: "log"
+setup.template.pattern: "log-*"
+
+setup.template.settings:
+  index.number_of_shards: 1
+
+logging.level: info
+logging.to_stderr: true
